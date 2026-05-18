@@ -180,11 +180,15 @@ DELIMITER ;
 -- Giải thích: Việc bệnh nhân bị lơ lửng không có giường vi phạm tính Atomicity (Tính nguyên tử) của nguyên lý ACID.
 -- Vì một giao dịch chuyển giường gồm hai hành động (trả giường cũ và nhận giường mới) phải cùng thành công hoặc cùng thất bại trọn vẹn, không thể dừng lại ở trạng thái dở dang.
 
-DROP PROCEDURE TransferBed;
+DROP PROCEDURE IF EXISTS TransferBed;
 
 DELIMITER //
 
-CREATE PROCEDURE TransferBed(IN p_patient_id INT, IN p_old_bed_id INT, IN p_new_bed_id INT)
+CREATE PROCEDURE TransferBed(
+    IN p_patient_id INT,
+    IN p_old_bed_id INT,
+    IN p_new_bed_id INT
+)
 BEGIN
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
@@ -196,8 +200,6 @@ BEGIN
     UPDATE Beds 
     SET patient_id = NULL 
     WHERE bed_id = p_old_bed_id AND patient_id = p_patient_id;
-
-    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Lỗi: Hệ thống gặp sự cố mạng đột ngột!';
 
     UPDATE Beds 
     SET patient_id = p_patient_id 
